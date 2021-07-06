@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include </usr/local/include/modbus/modbus.h>
+#include <modbus.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
