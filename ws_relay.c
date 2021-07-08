@@ -63,10 +63,11 @@ int get_relay_status(modbus_t* mb, uint8_t* tab_bits) {
     int rc=0, i;
 
     rc = modbus_read_bits(mb, RELAY_ID_ALL, READ_STATE_OF_RELAY, tab_bits);
-
+    printf("{\n");
     for (i=0; i < 8; i++) {
-        printf("Relay [%d]=%s \n", i+1, tab_bits[i]?"Open":"Closed");
+        printf("\t\"relay_%d\" : %d,\n", i+1, tab_bits[i]);
     }
+    printf("}\n");
     return rc;
 }
 
@@ -78,7 +79,7 @@ int set_relay_open(modbus_t* mb, uint8_t* tab_bits, int relay_id) {
     
     rc = modbus_write_bit(mb, address, OPEN_RELAY);
     
-    printf("address=%d\n", address);
+    //printf("address=%d\n", address);
     
     return rc;
 }
@@ -89,7 +90,7 @@ int set_relay_close(modbus_t* mb, uint8_t* tab_bits, int relay_id) {
     
     rc = modbus_write_bit(mb, address, CLOSE_RELAY);
 
-    printf("address=%d\n", address);
+    //printf("address=%d\n", address);
     
     return rc;
 }
@@ -167,16 +168,14 @@ int main(int argc,char** argv) {
     if (probe_relay_address)
         rc = probe_relay_address_fn(mb, tab_reg);
 
-    if (relay_status)
-        rc = get_relay_status(mb, tab_bits);
-
     if (open_relay)
         rc = set_relay_open(mb, tab_bits, open_relay);
 
     if (close_relay)
         rc = set_relay_close(mb, tab_bits, close_relay);
 
-    
+    if (relay_status)
+        rc = get_relay_status(mb, tab_bits);
 exit:
     if (mb) {
         modbus_close(mb);
