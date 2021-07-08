@@ -63,9 +63,13 @@ int get_relay_status(modbus_t* mb, uint8_t* tab_bits) {
     int rc=0, i;
 
     rc = modbus_read_bits(mb, RELAY_ID_ALL, READ_STATE_OF_RELAY, tab_bits);
-    printf("{\n");
+    printf("{ ");
     for (i=0; i < 8; i++) {
-        printf("\t\"relay_%d\" : %d,\n", i+1, tab_bits[i]);
+        printf("\"relay_%d\" : %d", i+1, tab_bits[i]);
+	if (i < 7)
+	    printf(", ");
+	else
+	    printf(" ");
     }
     printf("}\n");
     return rc;
