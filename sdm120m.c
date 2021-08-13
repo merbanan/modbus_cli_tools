@@ -36,6 +36,27 @@ int get_total_active_energy(modbus_t* mb, uint16_t* tab_reg) {
 }
 
 
+int get_all(modbus_t* mb, uint16_t* tab_reg) {
+    int rc, i;
+    float volt, energy, frequency;
+
+    // get volt
+    rc = modbus_read_input_registers(mb, 0x0000, 0x0002, tab_reg);
+    volt = modbus_get_float_dcba(tab_reg);
+
+    // get frequency
+    rc = modbus_read_input_registers(mb, 0x0046, 0x0002, tab_reg);
+    frequency = modbus_get_float_dcba(tab_reg);
+
+    // get energy
+    rc = modbus_read_input_registers(mb, 0x0156, 0x0002, tab_reg);
+    energy = modbus_get_float_dcba(tab_reg);
+
+    printf("{ \"energy\" : %f, \"volt\" : %f, \"frequency\" : %f }\n", energy, volt, frequency);
+
+    return rc;
+}
+
 int get_modbus_status(modbus_t* mb, uint16_t* tab_reg) {
     int rc, i;
     rc = modbus_read_registers(mb, 0x0014, 0x0002, tab_reg);
@@ -105,9 +126,10 @@ int main(int argc,char** argv) {
     int read_modbus_status = 0;
     int set_modbus_address = 0;
     int set_baud_rate = -1;
+    int read_all = 0;
     char* host = "192.168.1.8";
 
-    while ((option = getopt(argc, argv,"h:p:m:as:d:vVfIM:B:E")) != -1) {
+    while ((option = getopt(argc, argv,"h:p:m:as:d:vVfIM:B:EA")) != -1) {
         switch (option) {
             case 'h' : host = optarg; 
                 break;
@@ -133,6 +155,8 @@ int main(int argc,char** argv) {
                 break;
             case 'B': set_baud_rate = atoi(optarg);
                 break;
+	    case 'A': read_all = 1;
+		break;
             default: ; 
                  exit(EXIT_FAILURE);
         }
@@ -180,6 +204,9 @@ int main(int argc,char** argv) {
 
     if (read_total_active_energy)
         rc = get_total_active_energy(mb, tab_reg);
+
+    if (read_all)
+	rc = get_all(mb, tab_reg);
 exit:
     if (mb) {
         modbus_close(mb);
