@@ -38,7 +38,7 @@ int get_total_active_energy(modbus_t* mb, uint16_t* tab_reg) {
 
 int get_all(modbus_t* mb, uint16_t* tab_reg, char* host, int slave_id) {
     int rc, i;
-    float volt, energy, frequency;
+    float volt, energy, frequency, power, current;
 
     // get volt
     rc = modbus_read_input_registers(mb, 0x0000, 0x0002, tab_reg);
@@ -52,7 +52,15 @@ int get_all(modbus_t* mb, uint16_t* tab_reg, char* host, int slave_id) {
     rc = modbus_read_input_registers(mb, 0x0156, 0x0002, tab_reg);
     energy = modbus_get_float_dcba(tab_reg);
 
-    printf("{ \"id\" : %d, \"energy\" : %f, \"volt\" : %f, \"frequency\" : %f, \"host\" : \"%s\" }\n", slave_id, energy, volt, frequency, host);
+    // get power
+    rc = modbus_read_input_registers(mb, 0x000C, 0x0002, tab_reg);
+    power = modbus_get_float_dcba(tab_reg);
+
+    // get current
+    rc = modbus_read_input_registers(mb, 0x0006, 0x0002, tab_reg);
+    current = modbus_get_float_dcba(tab_reg);
+
+    printf("{ \"id\" : %d, \"energy\" : %f, \"volt\" : %f, \"frequency\" : %f, \"power\" : %f, \"current\" : %f, \"host\" : \"%s\" }\n", slave_id, energy, volt, frequency, power, current, host);
 
     return rc;
 }
