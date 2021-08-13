@@ -40,10 +40,6 @@ int get_all(modbus_t* mb, uint16_t* tab_reg, char* host, int slave_id) {
     int rc, i;
     float volt, energy, frequency;
 
-
-    // dummy read to reset state
-    rc = modbus_read_registers(mb, 0x0014, 0x0002, tab_reg);
-
     // get volt
     rc = modbus_read_input_registers(mb, 0x0000, 0x0002, tab_reg);
     volt = modbus_get_float_dcba(tab_reg);
@@ -170,6 +166,7 @@ int main(int argc,char** argv) {
         goto exit;
     }
 
+    usleep(100000);
     if (modbus_tcp)
         mb = modbus_new_tcp(host, port);
     else
