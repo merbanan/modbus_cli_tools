@@ -36,9 +36,13 @@ int get_total_active_energy(modbus_t* mb, uint16_t* tab_reg) {
 }
 
 
-int get_all(modbus_t* mb, uint16_t* tab_reg) {
+int get_all(modbus_t* mb, uint16_t* tab_reg, char* host, int slave_id) {
     int rc, i;
     float volt, energy, frequency;
+
+
+    // dummy read to reset state
+    rc = modbus_read_registers(mb, 0x0014, 0x0002, tab_reg);
 
     // get volt
     rc = modbus_read_input_registers(mb, 0x0000, 0x0002, tab_reg);
@@ -52,7 +56,7 @@ int get_all(modbus_t* mb, uint16_t* tab_reg) {
     rc = modbus_read_input_registers(mb, 0x0156, 0x0002, tab_reg);
     energy = modbus_get_float_dcba(tab_reg);
 
-    printf("{ \"energy\" : %f, \"volt\" : %f, \"frequency\" : %f }\n", energy, volt, frequency);
+    printf("{ \"id\" : %d, \"energy\" : %f, \"volt\" : %f, \"frequency\" : %f, \"host\" : \"%s\" }\n", slave_id, energy, volt, frequency, host);
 
     return rc;
 }
@@ -206,7 +210,7 @@ int main(int argc,char** argv) {
         rc = get_total_active_energy(mb, tab_reg);
 
     if (read_all)
-	rc = get_all(mb, tab_reg);
+	rc = get_all(mb, tab_reg, host, slave);
 exit:
     if (mb) {
         modbus_close(mb);
