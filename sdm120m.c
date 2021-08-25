@@ -141,8 +141,12 @@ int main(int argc,char** argv) {
     int set_baud_rate = -1;
     int read_all = 0;
     char* host = "192.168.1.8";
+    char* serial_device = "/dev/ttyUSB0";
+    int serial_baud_rate = 9600;
+//    int serial_parity
+    int serial_stop_bits = 1;
 
-    while ((option = getopt(argc, argv,"h:p:m:as:d:vVfIM:B:EA")) != -1) {
+    while ((option = getopt(argc, argv,"h:p:m:as:d:vVfIM:B:EAD:b:S:")) != -1) {
         switch (option) {
             case 'h' : host = optarg; 
                 break;
@@ -154,22 +158,30 @@ int main(int argc,char** argv) {
                 break;
             case 'd' : debug = atoi(optarg);
                 break;
-            case 'v': get_version = 1;
+            case 'v' : get_version = 1;
                 break;
-            case 'V': read_volt = 1;
+            case 'V' : read_volt = 1;
                 break;
-            case 'f': read_frequency = 1;
+            case 'f' : read_frequency = 1;
                 break;
-            case 'I': read_modbus_status = 1;
+            case 'I' : read_modbus_status = 1;
                 break;
-            case 'E': read_total_active_energy = 1;
+            case 'E' : read_total_active_energy = 1;
                 break;
-            case 'M': set_modbus_address = atoi(optarg);
+            case 'M' : set_modbus_address = atoi(optarg);
                 break;
-            case 'B': set_baud_rate = atoi(optarg);
+            case 'B' : set_baud_rate = atoi(optarg);
                 break;
-	    case 'A': read_all = 1;
+	    case 'A' : read_all = 1;
 		break;
+            case 'D' : serial_device = optarg;
+                break;
+            case 'b' : serial_baud_rate = atoi(optarg);
+		break;
+            // case 'P' : serial_parity = atoi(optarg);
+		//break;
+            case 'S' : serial_stop_bits = atoi(optarg);
+                break;
             default: ; 
                  exit(EXIT_FAILURE);
         }
@@ -180,7 +192,9 @@ int main(int argc,char** argv) {
     }
 
     usleep(100000);
-    if (modbus_tcp)
+    if (modbus_tcp == 2)
+	mb = modbus_new_rtu(serial_device, serial_baud_rate, 'N', 8, serial_stop_bits);
+    else if (modbus_tcp == 1)
         mb = modbus_new_tcp(host, port);
     else
         mb = modbus_new_rtutcp(host, port);
