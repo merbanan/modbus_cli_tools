@@ -46,22 +46,22 @@ int get_all(modbus_t* mb, uint16_t* tab_reg, char* host, int slave_id) {
     volt = modbus_get_float_dcba(tab_reg);
 
     // get frequency
-    rc = modbus_read_input_registers(mb, 0x0046, 0x0002, tab_reg);
+    rc = modbus_read_input_registers(mb, 0x0036, 0x0002, tab_reg);
     if (rc < 0) return rc;
     frequency = modbus_get_float_dcba(tab_reg);
 
     // get energy
-    rc = modbus_read_input_registers(mb, 0x0156, 0x0002, tab_reg);
+    rc = modbus_read_input_registers(mb, 0x0100, 0x0002, tab_reg);
     if (rc < 0) return rc;
     energy = modbus_get_float_dcba(tab_reg);
 
     // get power
-    rc = modbus_read_input_registers(mb, 0x000C, 0x0002, tab_reg);
+    rc = modbus_read_input_registers(mb, 0x0012, 0x0002, tab_reg);
     if (rc < 0) return rc;
     power = modbus_get_float_dcba(tab_reg);
 
     // get current
-    rc = modbus_read_input_registers(mb, 0x0006, 0x0002, tab_reg);
+    rc = modbus_read_input_registers(mb, 0x0008, 0x0002, tab_reg);
     if (rc < 0) return rc;
     current = modbus_get_float_dcba(tab_reg);
 
