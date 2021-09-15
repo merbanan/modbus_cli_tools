@@ -41,29 +41,29 @@ int get_all(modbus_t* mb, uint16_t* tab_reg, char* host, int slave_id) {
     float volt, energy, frequency, power, current;
 
     // get volt
-    rc = modbus_read_input_registers(mb, 0x0000, 0x0002, tab_reg);
+    rc = modbus_read_registers(mb, 0x0131, 0x0001, tab_reg);
     if (rc < 0) return rc;
-    volt = modbus_get_float_dcba(tab_reg);
+    volt = tab_reg[0]*0.01;
 
     // get frequency
-    rc = modbus_read_input_registers(mb, 0x0046, 0x0002, tab_reg);
+    rc = modbus_read_registers(mb, 0x0130, 0x0001, tab_reg);
     if (rc < 0) return rc;
-    frequency = modbus_get_float_dcba(tab_reg);
+    frequency = tab_reg[0]*0.01;
 
     // get energy
-    rc = modbus_read_input_registers(mb, 0x0156, 0x0002, tab_reg);
+    rc = modbus_read_registers(mb, 0xA000, 0x0002, tab_reg);
     if (rc < 0) return rc;
-    energy = modbus_get_float_dcba(tab_reg);
+    energy = ((tab_reg[0]<<16) | (tab_reg[1]))*0.01;
 
     // get power
-    rc = modbus_read_input_registers(mb, 0x000C, 0x0002, tab_reg);
+    rc = modbus_read_registers(mb, 0x0140, 0x0002, tab_reg);
     if (rc < 0) return rc;
-    power = modbus_get_float_dcba(tab_reg);
+    power = ((tab_reg[0]<<8) | tab_reg[1])*0.001;
 
     // get current
-    rc = modbus_read_input_registers(mb, 0x0006, 0x0002, tab_reg);
+    rc = modbus_read_registers(mb, 0x0139, 0x0002, tab_reg);
     if (rc < 0) return rc;
-    current = modbus_get_float_dcba(tab_reg);
+    current = ((tab_reg[0]<<8) | tab_reg[1])*0.001;
 
     printf("{ \"id\" : %d, \"energy\" : %f, \"volt\" : %f, \"frequency\" : %f, \"power\" : %f, \"current\" : %f, \"host\" : \"%s\" }\n", slave_id, energy, volt, frequency, power, current, host);
 
