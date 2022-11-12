@@ -58,7 +58,7 @@ int get_all(modbus_t* mb, uint16_t* tab_reg, char* host, int slave_id) {
     // get power
     rc = modbus_read_registers(mb, 0x0140, 0x0002, tab_reg);
     if (rc < 0) return rc;
-    power = ((tab_reg[0]<<8) | tab_reg[1])*0.001;
+    power = ((tab_reg[0]<<8) | tab_reg[1]);
 
     // get current
     rc = modbus_read_registers(mb, 0x0139, 0x0002, tab_reg);
