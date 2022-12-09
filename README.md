@@ -25,3 +25,8 @@ make
 ws_relay:
 
 sdm120m:
+
+orno_we_514
+
+Run the following to set baud to 9600 and parity None
+./orno_we_514 -d 1 -h 192.168.100.81 -s 41 -B 4 -Y 1
