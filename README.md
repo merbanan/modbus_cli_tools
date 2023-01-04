@@ -30,3 +30,7 @@ orno_we_514
 
 Run the following to set baud to 9600 and parity None
 ./orno_we_514 -d 1 -h 192.168.100.81 -s 41 -B 4 -Y 1
+
+
+Run the following to set id 11 and 9600 baud
+./sdm120m -d 1 -m 2 -D /dev/ttyUSB0 -s 0 -b2400 -M 11 -B 2
