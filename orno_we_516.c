@@ -21,9 +21,11 @@ int get_volt(modbus_t* mb, uint16_t* tab_reg) {
 
 int get_frequency(modbus_t* mb, uint16_t* tab_reg) {
     int rc, i;
-    rc = modbus_read_registers(mb, 0x0130, 0x0001, tab_reg);
+    float frequency;
+    rc = modbus_read_registers(mb, 0x0014, 0x0002, tab_reg);
+    frequency = modbus_get_float_dcba(tab_reg);
 
-    printf("Frequency %f\n",  tab_reg[0]*0.01);
+    printf("Frequency %f\n",  frequency);
     return rc;
 }
 
@@ -38,40 +40,48 @@ int get_total_active_energy(modbus_t* mb, uint16_t* tab_reg) {
 
 int get_all(modbus_t* mb, uint16_t* tab_reg, char* host, int slave_id) {
     int rc, i;
-    float volt, energy, frequency, power, current;
+    float volt_L1, volt_L2, volt_L3, energy, frequency, power, current;
 
-    // get volt
-    rc = modbus_read_registers(mb, 0x0131, 0x0001, tab_reg);
+    // get volt L1
+    rc = modbus_read_registers(mb, 0x000E, 0x0002, tab_reg);
     if (rc < 0) return rc;
-    volt = tab_reg[0]*0.01;
+    volt_L1 = modbus_get_float_dcba(tab_reg);
+
+    rc = modbus_read_registers(mb, 0x0010, 0x0002, tab_reg);
+    if (rc < 0) return rc;
+    volt_L2 = modbus_get_float_dcba(tab_reg);
+
+    rc = modbus_read_registers(mb, 0x0012, 0x0002, tab_reg);
+    if (rc < 0) return rc;
+    volt_L3 = modbus_get_float_dcba(tab_reg);
+
 
     // get frequency
-    rc = modbus_read_registers(mb, 0x0130, 0x0001, tab_reg);
+    rc = modbus_read_registers(mb, 0x0014, 0x0002, tab_reg);
     if (rc < 0) return rc;
-    frequency = tab_reg[0]*0.01;
+    frequency = modbus_get_float_dcba(tab_reg);
 
     // get energy
-    rc = modbus_read_registers(mb, 0xA000, 0x0002, tab_reg);
+    rc = modbus_read_registers(mb, 0x0100, 0x0002, tab_reg);
     if (rc < 0) return rc;
-    energy = ((tab_reg[0]<<16) | (tab_reg[1]))*0.01;
+    energy = modbus_get_float_dcba(tab_reg);
 
     // get power
-    rc = modbus_read_registers(mb, 0x0140, 0x0002, tab_reg);
+    rc = modbus_read_registers(mb, 0x001C, 0x0002, tab_reg);
     if (rc < 0) return rc;
-    power = ((tab_reg[0]<<8) | tab_reg[1]);
+    power = modbus_get_float_dcba(tab_reg);
 
     // get current
-    rc = modbus_read_registers(mb, 0x0139, 0x0002, tab_reg);
-    if (rc < 0) return rc;
-    current = ((tab_reg[0]<<8) | tab_reg[1])*0.001;
+    //rc = modbus_read_registers(mb, 0x0139, 0x0002, tab_reg);
+    //if (rc < 0) return rc;
+    //current = ((tab_reg[0]<<8) | tab_reg[1])*0.001;
 
-    printf("{ \"id\" : %d, \"energy\" : %f, \"volt\" : %f, \"frequency\" : %f, \"power\" : %f, \"current\" : %f, \"host\" : \"%s\" }\n", slave_id, energy, volt, frequency, power, current, host);
+    printf("{ \"id\" : %d, \"energy\" : %f, \"volt_L1\" : %f, \"volt_L2\" : %f, \"volt_L3\" : %f, \"frequency\" : %f, \"power\" : %f, \"host\" : \"%s\" }\n", slave_id, energy, volt_L1, volt_L2, volt_L3, frequency, power, host);
 
     return rc;
 }
 
 
-// Parity is undocumented and only used in the windows software
 int get_modbus_status(modbus_t* mb, uint16_t* tab_reg) {
     int rc, i, baud_value, parity_value;
     // 1=1200,2=2400,3=4800,4=9600
