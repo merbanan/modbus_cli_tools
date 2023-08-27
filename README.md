@@ -34,3 +34,6 @@ Run the following to set baud to 9600 and parity None
 
 Run the following to set id 11 and 9600 baud
 ./sdm120m -d 1 -m 2 -D /dev/ttyUSB0 -s 0 -b2400 -M 11 -B 2
+
+Setting the modbus id from 1 to 10
+./orno_we_516 -d 1 -m 2 -D /dev/ttyUSB0 -s 1 -M 10
