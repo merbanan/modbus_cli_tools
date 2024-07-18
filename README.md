@@ -24,6 +24,9 @@ make
 
 ws_relay:
 
+mper:
+./mper -m 0 -h 192.168.1.200 -p 4196 -S -s 1 -S -d 1 -c 1
+
 sdm120m:
 
 orno_we_514
