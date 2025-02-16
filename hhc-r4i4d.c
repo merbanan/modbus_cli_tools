@@ -76,11 +76,27 @@ int get_relay_status(modbus_t* mb, uint8_t* tab_bits) {
     return rc;
 }
 
+int get_digital_input_status(modbus_t* mb, uint8_t* tab_bits) {
+    int rc=0, i;
+
+    rc = modbus_read_input_bits(mb, 0x0020, READ_STATE_OF_RELAY, tab_bits);
+
+    printf("{ ");
+    for (i=0; i < 4; i++) {
+        printf("\"di_%d\" : %d", i+1, tab_bits[i]);
+        if (i < 3)
+            printf(", ");
+        else
+            printf(" ");
+    }
+    printf("}\n");
+    return rc;
+}
 
 
 int set_relay_open(modbus_t* mb, uint8_t* tab_bits, int relay_id) {
     int rc=0, i;
-    uint16_t address = 0x0000 + relay_id-1;
+    uint16_t address = 0x0010 + relay_id-1;
     
     rc = modbus_write_bit(mb, address, OPEN_RELAY);
     
@@ -91,7 +107,7 @@ int set_relay_open(modbus_t* mb, uint8_t* tab_bits, int relay_id) {
 
 int set_relay_close(modbus_t* mb, uint8_t* tab_bits, int relay_id) {
     int rc=0, i;
-    uint16_t address = 0x0000 + relay_id-1;
+    uint16_t address = 0x0010 + relay_id-1;
     
     rc = modbus_write_bit(mb, address, CLOSE_RELAY);
 
@@ -116,9 +132,10 @@ int main(int argc,char** argv) {
     int relay_status = 0;
     int open_relay = 0;
     int close_relay = 0;
+    int get_di_status = 0;
     char* host = "192.168.1.8";
 
-    while ((option = getopt(argc, argv,"h:p:m:as:d:vSo:c:")) != -1) {
+    while ((option = getopt(argc, argv,"h:p:m:as:d:vSDo:c:")) != -1) {
         switch (option) {
             case 'h' : host = optarg; 
                 break;
@@ -140,6 +157,8 @@ int main(int argc,char** argv) {
                 break;
             case 'c': close_relay = atoi(optarg);
                 break;
+            case 'D': get_di_status = 1;
+		break;
             default: ; 
                  exit(EXIT_FAILURE);
         }
@@ -181,6 +200,9 @@ int main(int argc,char** argv) {
 
     if (relay_status)
         rc = get_relay_status(mb, tab_bits);
+
+    if (get_di_status)
+	rc = get_digital_input_status(mb, tab_bits);
 exit:
     if (mb) {
         modbus_close(mb);
