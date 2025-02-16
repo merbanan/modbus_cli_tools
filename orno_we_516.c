@@ -127,9 +127,9 @@ int get_hardware_version(modbus_t* mb, uint16_t* tab_reg) {
     
     printf("Serial number: %04x%04x\n", tab_reg[0], tab_reg[1]);
     rc = modbus_read_registers(mb, 0x0004, 0x0002, tab_reg);
-    printf("Software version: %04x\n", tab_reg[0]);
+    printf("Software version: %.2f\n", modbus_get_float_dcba(tab_reg));
     rc = modbus_read_registers(mb, 0x0006, 0x0002, tab_reg);
-    printf("Hardware version: %04x\n", tab_reg[0]);
+    printf("Hardware version: %.2f\n", modbus_get_float_dcba(tab_reg));
 
     return rc;
 }
