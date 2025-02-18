@@ -1,0 +1,44 @@
+    binary_sensors:
+      - name: digital_input
+        device_class: power
+        input_type: discrete_input
+        scan_interval: 5
+        address: 32
+        slave: 1
+        virtual_count: 3
+        unique_id: di_relay
+      - name: relay_status
+        device_class: power
+        input_type: coil
+        scan_interval: 5
+        address: 16
+        slave: 1
+        virtual_count: 3
+        unique_id: di_relay_status
+
+    switches:
+      - name: panel_R1
+        address: 16
+        command_on: 255
+        command_off: 0
+        write_type: coil
+        slave: 1
+      - name: panel_R2
+        address: 17
+        command_on: 255
+        command_off: 0
+        write_type: coil
+        slave: 1
+      - name: panel_R3
+        address: 18
+        command_on: 255
+        command_off: 0
+        write_type: coil
+        slave: 1
+      - name: panel_R4
+        address: 19
+        command_on: 255
+        command_off: 0
+        write_type: coil
+        slave: 1
+
