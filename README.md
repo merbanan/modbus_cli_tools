@@ -44,3 +44,5 @@ Setting the modbus id from 1 to 10
 Get all info from Orno meter
 ./orno_we_516 -d 1 -m 0 -h 192.168.10.200 -p 12345 -s 1 -A
 
+Read temp
+./xy-md02 -d 1 -m 2 -D /dev/ttyUSB1 -s 51 -T
