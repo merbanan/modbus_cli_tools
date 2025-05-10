@@ -1,4 +1,4 @@
-all: ws_relay sdm120m orno_we_514 orno_we_516 ddm18sd mper sdm630 hhc-r4i4d xy-md02
+all: ws_relay sdm120m orno_we_514 orno_we_516 ddm18sd mper sdm630 hhc-r4i4d xy-md02 web_io_8relay cwt-sl
 
 ws_relay: ws_relay.c
 	gcc -ggdb3 -O0 -Ilibmodbus/src/ -o ws_relay ws_relay.c libmodbus/src/.libs/libmodbus.a
@@ -27,13 +27,18 @@ hhc-r4i4d: hhc-r4i4d.c
 xy-md02: xy-md02.c
 	gcc -ggdb3 -O0 -Ilibmodbus/src/ -o xy-md02 xy-md02.c libmodbus/src/.libs/libmodbus.a
 
+web_io_8relay: web_io_8relay.c
+	gcc -ggdb3 -O0 -Ilibmodbus/src/ -o web_io_8relay web_io_8relay.c libmodbus/src/.libs/libmodbus.a
+
+cwt-sl: cwt-sl.c
+	gcc -ggdb3 -O0 -Ilibmodbus/src/ -o cwt-sl cwt-sl.c libmodbus/src/.libs/libmodbus.a
 
 libmodbus: libmodbus
 	git clone https://github.com/merbanan/libmodbus.git
 	cd libmodbus ; ./autogen.sh ; ./configure --enable-static ; make
 
 clean:
-	rm -f *.o ws_relay sdm120m orno_we_514 orno_we_516 ddm18sd mper hhc-r4i4d xy-md02
+	rm -f *.o ws_relay sdm120m orno_we_514 orno_we_516 ddm18sd mper hhc-r4i4d xy-md02 web_io_8relay
 
 install:
 
