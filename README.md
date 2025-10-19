@@ -47,5 +47,11 @@ Get all info from Orno meter
 Get voltage and frequency from BGE Tech meter
 ./bge_tech_DS100-00B -d 1 -m 2 -P N -s 1 -f -V
 
+Setting the modbus id from 1 to 2
+./bge_tech_DS100-00B -d 1 -m 2 -P N -s 1 -D /dev/ttyUSB1 -M 2
+
+Setting even pairty on slave 2
+./bge_tech_DS100-00B -d 1 -m 2 -P N -s 2 -D /dev/ttyUSB1 -y E
+
 Read temp
 ./xy-md02 -d 1 -m 2 -D /dev/ttyUSB1 -s 51 -T

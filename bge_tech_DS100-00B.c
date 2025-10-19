@@ -31,7 +31,7 @@ int get_total_active_energy(modbus_t* mb, uint16_t* tab_reg) {
     int rc, i;
     rc = modbus_read_input_registers(mb, 0x010E, 0x0002, tab_reg);
 
-    printf("Energy %f\n",  (float)tab_reg[0]/100.0);
+    printf("Energy %f\n",  (float)((tab_reg[0] <<16)| tab_reg[1])/100.0);
     return rc;
 }
 
@@ -41,29 +41,29 @@ int get_all(modbus_t* mb, uint16_t* tab_reg, char* host, int slave_id) {
     float volt, energy, frequency, power, current;
 
     // get volt
-    rc = modbus_read_input_registers(mb, 0x0000, 0x0002, tab_reg);
+    rc = modbus_read_input_registers(mb, 0x0400, 0x0002, tab_reg);
     if (rc < 0) return rc;
-    volt = modbus_get_float_dcba(tab_reg);
+    volt = (float)(((tab_reg[0] <<16)| tab_reg[1])/1000.0);
 
     // get frequency
-    rc = modbus_read_input_registers(mb, 0x0036, 0x0002, tab_reg);
+    rc = modbus_read_input_registers(mb, 0x0435, 0x0001, tab_reg);
     if (rc < 0) return rc;
-    frequency = modbus_get_float_dcba(tab_reg);
+    frequency = (float)(tab_reg[0]/10.0);
 
     // get energy
-    rc = modbus_read_input_registers(mb, 0x0100, 0x0002, tab_reg);
+    rc = modbus_read_input_registers(mb, 0x010E, 0x0002, tab_reg);
     if (rc < 0) return rc;
-    energy = modbus_get_float_dcba(tab_reg);
+    energy = (float)(((tab_reg[0] <<16)| tab_reg[1])/100.0);
 
     // get power
-    rc = modbus_read_input_registers(mb, 0x0012, 0x0002, tab_reg);
+    rc = modbus_read_input_registers(mb, 0x0440, 0x0002, tab_reg);
     if (rc < 0) return rc;
-    power = modbus_get_float_dcba(tab_reg);
+    power = (float)(((tab_reg[0] <<16)| tab_reg[1])/1000.0);
 
     // get current
-    rc = modbus_read_input_registers(mb, 0x0008, 0x0002, tab_reg);
+    rc = modbus_read_input_registers(mb, 0x0416, 0x0002, tab_reg);
     if (rc < 0) return rc;
-    current = modbus_get_float_dcba(tab_reg);
+    current = (float)(((tab_reg[0] <<16)| tab_reg[1])/1000.0);
 
     printf("{ \"id\" : %d, \"energy\" : %f, \"volt\" : %f, \"frequency\" : %f, \"power\" : %f, \"current\" : %f, \"host\" : \"%s\" }\n", slave_id, energy, volt, frequency, power, current, host);
 
@@ -72,17 +72,18 @@ int get_all(modbus_t* mb, uint16_t* tab_reg, char* host, int slave_id) {
 
 int get_modbus_status(modbus_t* mb, uint16_t* tab_reg) {
     int rc, i;
-    char* parity[] = {"Even", "Odd", "None"};
+    char* parity[] = {"None", "Odd", "Even"};
+    int baud_rate[] = {0,0,0,0,0,0,9600,19200,38400,115200};
 
-    rc = modbus_read_registers(mb, 0x0008, 0x0002, tab_reg);
+    rc = modbus_read_registers(mb, 1003, 0x0001, tab_reg);
     
-    printf("Modbus id %f\n", modbus_get_float_dcba(tab_reg));
+    printf("Modbus id %d\n", tab_reg[0]);
 
-     rc = modbus_read_registers(mb, 0x0000, 0x0002, tab_reg);
-     printf("Baud rate %f\n", modbus_get_float_dcba(tab_reg));
+     rc = modbus_read_registers(mb, 0x100C, 0x0001, tab_reg);
+     printf("Baud rate %d\n", baud_rate[tab_reg[0]]);
 
-     rc = modbus_read_registers(mb, 0x0002, 0x0002, tab_reg);
-     printf("Pairity %s\n", parity[(int)modbus_get_float_dcba(tab_reg)]);
+     rc = modbus_read_registers(mb, 0x100D, 0x0001, tab_reg);
+     printf("Pairity %s\n", parity[tab_reg[0]]);
 
     return rc;
 }
@@ -91,8 +92,8 @@ int configure_modbus_address(modbus_t* mb, uint16_t* tab_reg, int modbus_address
 ) {
     int rc, i;
 
-    modbus_set_float_dcba(modbus_address, tab_reg);
-    rc = modbus_write_registers(mb, 0x0008, 0x0002, tab_reg);
+//    rc = modbus_write_registers(mb, 0x0008, 0x0002, tab_reg);
+    rc = modbus_write_register(mb, 0x1003, modbus_address);
 
     return rc;
 }
@@ -101,29 +102,36 @@ int configure_baud_rate(modbus_t* mb, uint16_t* tab_reg, int baud_rate
 ) {
     int rc, i;
     // 1200, 2400, 4800, 9600
-    modbus_set_float_dcba(baud_rate, tab_reg);
-    rc = modbus_write_registers(mb, 0x0000, 0x0002, tab_reg);
+//    modbus_set_float_dcba(baud_rate, tab_reg);
+ //   rc = modbus_write_registers(mb, 0x0000, 0x0002, tab_reg);
 
     return rc;
 }
 
-int configure_parity(modbus_t* mb, uint16_t* tab_reg, int parity
+int configure_parity(modbus_t* mb, uint16_t* tab_reg, char parity
 ) {
     int rc, i;
-    // Even, Odd, None
-    modbus_set_float_dcba(parity, tab_reg);
-    rc = modbus_write_registers(mb, 0x0002, 0x0002, tab_reg);
+    int parity_val;
+    // None,  Odd, Even
+    switch (parity) {
+        case 'E': parity_val = 2; break;
+        case 'O': parity_val = 1; break;
+        case 'N': parity_val = 0; break;
+        default: return -1;
+    }
+
+    rc = modbus_write_register(mb, 0x100D, parity_val);
 
     return rc;
 }
 
 int get_hardware_version(modbus_t* mb, uint16_t* tab_reg) {
     int rc, i;
-    rc = modbus_read_registers(mb, 0xFC00, 0x0002, tab_reg);
+    rc = modbus_read_registers(mb, 0x1000, 0x0006, tab_reg);
     
-    printf("Serial number: %04x%04x\n", tab_reg[0], tab_reg[1]);
-    rc = modbus_read_registers(mb, 0xFC03, 0x0002, tab_reg);
-    printf("Software version: %04x\n", tab_reg[0]);
+    printf("Serial number: %04x%04x%04x%04x%04x%04x\n", tab_reg[0], tab_reg[1], tab_reg[2],tab_reg[3], tab_reg[4], tab_reg[5]);
+//    rc = modbus_read_registers(mb, 0xFC03, 0x0002, tab_reg);
+//    printf("Software version: %04x\n", tab_reg[0]);
 
     return rc;
 }
@@ -154,7 +162,7 @@ int main(int argc,char** argv) {
     int serial_baud_rate = 9600;
     char serial_parity = 'N';
     int serial_stop_bits = 1;
-    int set_parity = -1;
+    char set_parity = 'U';
 
     while ((option = getopt(argc, argv,"h:p:m:as:d:vVfIM:B:EAD:b:S:P:Y:y:")) != -1) {
         switch (option) {
@@ -182,7 +190,7 @@ int main(int argc,char** argv) {
                 break;
             case 'B': set_baud_rate = atoi(optarg);
                 break;
-            case 'y': set_parity = atoi(optarg);
+            case 'y': set_parity = optarg[0];
                 break;
             case 'A': read_all = 1;
                 break;
@@ -239,7 +247,7 @@ int main(int argc,char** argv) {
     if (set_baud_rate != -1)
         rc = configure_baud_rate(mb, tab_reg, set_baud_rate);
 
-    if (set_parity != -1)
+    if (set_parity != 'U')
         rc = configure_parity(mb, tab_reg, set_parity);
 
     if (read_total_active_energy)
